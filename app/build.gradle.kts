@@ -20,6 +20,9 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "BASE_URL", "\"https://rickandmortyapi.com/\"")
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
@@ -28,6 +31,11 @@ android {
             )
         }
     }
+
+    buildFeatures {
+        buildConfig = true
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -41,12 +49,19 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
     implementation (libs.ui)
     implementation (libs.androidx.material)
     implementation (libs.coil.compose)
+    implementation(libs.koin.android)
+    implementation(libs.koin.compose)
+    implementation(libs.koin.compose.viewModel)
+    implementation(libs.okhttp)
+    implementation(libs.squareup.retrofit)
+    implementation(libs.logging.interceptor)
+    implementation(libs.gson)
+    implementation (libs.converter.gson)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
