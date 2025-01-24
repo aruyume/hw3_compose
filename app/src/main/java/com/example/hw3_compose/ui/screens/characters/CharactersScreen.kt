@@ -1,4 +1,4 @@
-package com.example.hw3_compose.ui.screens
+package com.example.hw3_compose.ui.screens.characters
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,26 +21,42 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.hw3_compose.model.CharacterModel
-import com.example.hw3_compose.model.MockData
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun CharactersScreen(
-    onItemClick: (CharacterModel) -> Unit,
-    paddingValues: PaddingValues
+    onNavigateToDetail: (Int) -> Unit,
+    paddingValues: PaddingValues,
+    charactersViewModel: CharactersViewModel = koinViewModel()
 ) {
-    LazyColumn(
-        modifier = Modifier
-            .padding(paddingValues)
-            .padding(horizontal = 16.dp),
-        contentPadding = PaddingValues(top = 10.dp)
-    ) {
-        items(MockData.characters) { character ->
-            CharacterItem(character = character, onItemClick = onItemClick)
+    val characters = charactersViewModel.characters.collectAsState().value
+    val isLoading = charactersViewModel.isLoading.collectAsState().value
+
+    LaunchedEffect(Unit) {
+        charactersViewModel.fetchAllCharacters()
+    }
+
+    if (isLoading) {
+        Text(text = "Loading...", modifier = Modifier.padding(16.dp))
+    } else {
+        LazyColumn(
+            modifier = Modifier
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp),
+            contentPadding = PaddingValues(top = 10.dp)
+        ) {
+            items(characters) { character ->
+                CharacterItem(
+                    character = character,
+                    onItemClick = { onNavigateToDetail(character.id) })
+            }
         }
     }
 }
