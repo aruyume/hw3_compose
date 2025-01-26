@@ -1,6 +1,5 @@
 package com.example.hw3_compose.ui.screens.locations
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -33,27 +32,21 @@ fun LocationsScreen(
     paddingValues: PaddingValues,
     locationsViewModel: LocationsViewModel = koinViewModel()
 ) {
-    val locations = locationsViewModel.locations.collectAsState().value
-    val isLoading = locationsViewModel.isLoading.collectAsState().value
+    val locations = locationsViewModel.locations.collectAsState()
 
     LaunchedEffect(Unit) {
         locationsViewModel.fetchAllLocations()
     }
-
-    if (isLoading) {
-        Text(text = "Loading...", modifier = Modifier.padding(16.dp))
-    } else {
-        LazyColumn(
-            modifier = Modifier
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp),
-            contentPadding = PaddingValues(top = 10.dp)
-        ) {
-            items(locations) { location ->
-                LocationItem(
-                    location = location,
-                    onItemClick = { onNavigateToDetail(location.id) })
-            }
+    LazyColumn(
+        modifier = Modifier
+            .padding(paddingValues)
+            .padding(horizontal = 16.dp),
+        contentPadding = PaddingValues(top = 10.dp)
+    ) {
+        items(locations.value) { location ->
+            LocationItem(
+                location = location,
+                onItemClick = { onNavigateToDetail(location.id) })
         }
     }
 }

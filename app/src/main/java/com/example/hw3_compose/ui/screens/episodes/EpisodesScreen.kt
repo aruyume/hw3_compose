@@ -32,30 +32,27 @@ fun EpisodesScreen(
     paddingValues: PaddingValues,
     episodesViewModel: EpisodesViewModel = koinViewModel()
 ) {
-    val episodes = episodesViewModel.episodes.collectAsState().value
-    val isLoading = episodesViewModel.isLoading.collectAsState().value
+    val episodes = episodesViewModel.episodes.collectAsState()
 
     LaunchedEffect(Unit) {
         episodesViewModel.fetchAllEpisodes()
     }
 
-    if (isLoading) {
-        Text(text = "Loading...", modifier = Modifier.padding(16.dp))
-    } else {
-        LazyColumn(
-            modifier = Modifier
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp),
-            contentPadding = PaddingValues(top = 10.dp)
-        ) {
-            items(episodes) { episodes ->
-                EpisodesItem(
-                    episodes = episodes,
-                    onItemClick = { onNavigateToDetail(episodes.id) })
-            }
+    LazyColumn(
+        modifier = Modifier
+            .padding(paddingValues)
+            .padding(horizontal = 16.dp),
+        contentPadding = PaddingValues(top = 10.dp)
+    ) {
+        items(episodes.value) { episodes ->
+            EpisodesItem(
+                episodes = episodes,
+                onItemClick = { onNavigateToDetail(episodes.id) }
+            )
         }
     }
 }
+
 
 @Composable
 fun EpisodesItem(episodes: EpisodeModel, onItemClick: (EpisodeModel) -> Unit) {

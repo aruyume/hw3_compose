@@ -8,5 +8,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 enum class NavigationItem(val route: String, val label: String, val icon: ImageVector) {
     Characters("characters", "Characters", Icons.Default.Person),
     Locations("locations", "Locations", Icons.Default.Place),
-    Episodes("episodes", "Episodes", Icons.Default.FavoriteBorder)
+    Episodes("episodes", "Episodes", Icons.Default.List),
+    FavoriteCharacters("favorite_characters", "FavoriteCharacters", Icons.Default.FavoriteBorder)
 }
