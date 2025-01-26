@@ -2,29 +2,24 @@ package com.example.hw3_compose.ui.screens.episodes
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.hw3_compose.data.api.EpisodeApiService
+import com.example.hw3_compose.data.repository.EpisodesRepository
 import com.example.hw3_compose.model.EpisodeModel
-import com.example.hw3_compose.model.toEpisodeModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class EpisodesViewModel(private val apiService: EpisodeApiService) : ViewModel() {
+class EpisodesViewModel(private val episodesRepository: EpisodesRepository) : ViewModel() {
     private val _episodes = MutableStateFlow<List<EpisodeModel>>(emptyList())
-    val episodes: StateFlow<List<EpisodeModel>> = _episodes
-
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading
+    val episodes: StateFlow<List<EpisodeModel>> = _episodes.asStateFlow()
 
     fun fetchAllEpisodes() {
-        _isLoading.value = true
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
-                val response = apiService.getAllEpisodes()
-                _episodes.value = response.episodesResponse.map { it.toEpisodeModel() }
+                _episodes.value = episodesRepository.getAllEpisodes()
             } catch (e: Exception) {
-            } finally {
-                _isLoading.value = false
+                _episodes.value = emptyList()
             }
         }
     }

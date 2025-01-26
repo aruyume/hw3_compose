@@ -13,6 +13,8 @@ import com.example.hw3_compose.ui.screens.episodes.EpisodesScreen
 import com.example.hw3_compose.ui.screens.characters.detail.CharacterDetailScreen
 import com.example.hw3_compose.ui.screens.episodes.EpisodesViewModel
 import com.example.hw3_compose.ui.screens.episodes.detail.EpisodeDetailScreen
+import com.example.hw3_compose.ui.screens.fav.FavoriteCharactersViewModel
+import com.example.hw3_compose.ui.screens.fav.FavoritesScreen
 import com.example.hw3_compose.ui.screens.locations.LocationsViewModel
 import com.example.hw3_compose.ui.screens.locations.detail.LocationDetailScreen
 import org.koin.compose.viewmodel.koinViewModel
@@ -23,6 +25,7 @@ fun AppNavHost(navController: NavHostController, paddingValues: PaddingValues) {
     val charactersViewModel: CharactersViewModel = koinViewModel()
     val locationsViewModel: LocationsViewModel = koinViewModel()
     val episodesViewModel: EpisodesViewModel = koinViewModel()
+    val favoriteCharactersViewModel: FavoriteCharactersViewModel = koinViewModel()
 
     NavHost(navController = navController, startDestination = "characters") {
         composable("characters") {
@@ -55,6 +58,16 @@ fun AppNavHost(navController: NavHostController, paddingValues: PaddingValues) {
             )
         }
 
+        composable("favorite_characters") {
+            FavoritesScreen(
+                onNavigateToDetail = { favId ->
+                    navController.navigate("episode_detail/$favId")
+                },
+                paddingValues = paddingValues,
+                favoritesViewModel = favoriteCharactersViewModel
+            )
+        }
+
         composable("character_detail/{characterId}") { backStackEntry ->
             val characterId = backStackEntry.arguments?.getString("characterId")?.toInt() ?: 0
             val character =
@@ -63,7 +76,8 @@ fun AppNavHost(navController: NavHostController, paddingValues: PaddingValues) {
                 CharacterDetailScreen(
                     character = character,
                     paddingValues = paddingValues,
-                    onBackClick = { navController.popBackStack() }
+                    onBackClick = { navController.popBackStack() },
+                    favoritesViewModel = favoriteCharactersViewModel
                 )
             }
         }
@@ -90,6 +104,16 @@ fun AppNavHost(navController: NavHostController, paddingValues: PaddingValues) {
                     onBackClick = { navController.popBackStack() }
                 )
             }
+        }
+
+        composable("favorite_characters/{favId}") {
+            FavoritesScreen(
+                paddingValues = paddingValues,
+                onNavigateToDetail = { favId ->
+                    navController.navigate("favorite_characters/$favId")
+                },
+                favoritesViewModel = koinViewModel()
+            )
         }
     }
 }

@@ -2,29 +2,24 @@ package com.example.hw3_compose.ui.screens.locations
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.hw3_compose.data.api.LocationApiService
+import com.example.hw3_compose.data.repository.LocationsRepository
 import com.example.hw3_compose.model.LocationModel
-import com.example.hw3_compose.model.toLocationModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class LocationsViewModel(private val apiService: LocationApiService) : ViewModel() {
+class LocationsViewModel(private val locationsRepository: LocationsRepository) : ViewModel() {
     private val _locations = MutableStateFlow<List<LocationModel>>(emptyList())
-    val locations: StateFlow<List<LocationModel>> = _locations
-
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading
+    val locations: StateFlow<List<LocationModel>> = _locations.asStateFlow()
 
     fun fetchAllLocations() {
-        _isLoading.value = true
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
-                val response = apiService.getAllLocations()
-                _locations.value = response.locationsResponse.map { it.toLocationModel() }
+                _locations.value = locationsRepository.getAllCharacter()
             } catch (e: Exception) {
-            } finally {
-                _isLoading.value = false
+                _locations.value = emptyList()
             }
         }
     }
