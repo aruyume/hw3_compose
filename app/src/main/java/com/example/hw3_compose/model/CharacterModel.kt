@@ -1,9 +1,12 @@
 package com.example.hw3_compose.model
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.example.hw3_compose.data.dto.CharacterResponse
 
+@Entity(tableName = "favorite_characters")
 data class CharacterModel(
-    val id: Int,
+    @PrimaryKey val id: Int,
     val name: String,
     val status: String,
     val gender: String,

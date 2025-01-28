@@ -1,6 +1,5 @@
 package com.example.hw3_compose.ui.screens.locations
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -12,18 +11,19 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.paging.LoadState
+import androidx.paging.compose.collectAsLazyPagingItems
+import com.example.hw3_compose.data.paging.ErrorItem
+import com.example.hw3_compose.data.paging.LoadingItem
 import com.example.hw3_compose.model.LocationModel
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -33,27 +33,27 @@ fun LocationsScreen(
     paddingValues: PaddingValues,
     locationsViewModel: LocationsViewModel = koinViewModel()
 ) {
-    val locations = locationsViewModel.locations.collectAsState().value
-    val isLoading = locationsViewModel.isLoading.collectAsState().value
+    val locations = locationsViewModel.locations.collectAsLazyPagingItems()
 
-    LaunchedEffect(Unit) {
-        locationsViewModel.fetchAllLocations()
-    }
-
-    if (isLoading) {
-        Text(text = "Loading...", modifier = Modifier.padding(16.dp))
-    } else {
-        LazyColumn(
-            modifier = Modifier
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp),
-            contentPadding = PaddingValues(top = 10.dp)
-        ) {
-            items(locations) { location ->
+    LazyColumn(
+        modifier = Modifier
+            .padding(paddingValues)
+            .padding(horizontal = 16.dp),
+        contentPadding = PaddingValues(top = 10.dp)
+    ) {
+        items(locations.itemCount) { index ->
+            val location = locations[index]
+            location?.let {
                 LocationItem(
-                    location = location,
-                    onItemClick = { onNavigateToDetail(location.id) })
+                    location = it,
+                    onItemClick = { onNavigateToDetail(it.id) }
+                )
             }
+        }
+        when (val state = locations.loadState.append) {
+            is LoadState.Loading -> item { LoadingItem() }
+            is LoadState.Error -> item { ErrorItem(state.error) { locations.retry() } }
+            else -> {}
         }
     }
 }

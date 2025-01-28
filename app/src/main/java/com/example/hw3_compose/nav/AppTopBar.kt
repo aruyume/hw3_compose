@@ -20,6 +20,7 @@ fun AppTopBar(navController: NavController) {
                         "characters" -> "Characters"
                         "locations" -> "Locations"
                         "episodes" -> "Episodes"
+                        "favorite_characters" -> "Favorite characters"
                         else -> "App"
                     },
                     color = Color.White

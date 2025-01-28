@@ -3,6 +3,9 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+
+    //Ksp
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -49,19 +52,40 @@ android {
 }
 
 dependencies {
+    //nav
     implementation(libs.androidx.navigation.compose)
+
+    //json
     implementation(libs.kotlinx.serialization.json)
-    implementation (libs.ui)
-    implementation (libs.androidx.material)
-    implementation (libs.coil.compose)
+    implementation(libs.gson)
+    implementation(libs.converter.gson)
+
+    //ui
+    implementation(libs.ui)
+    implementation(libs.androidx.material)
+
+    //coil
+    implementation(libs.coil.compose)
+
+    //koin
     implementation(libs.koin.android)
     implementation(libs.koin.compose)
     implementation(libs.koin.compose.viewModel)
+
+    //retrofit
     implementation(libs.okhttp)
     implementation(libs.squareup.retrofit)
     implementation(libs.logging.interceptor)
-    implementation(libs.gson)
-    implementation (libs.converter.gson)
+
+    //coroutines
+    implementation(libs.kotlinx.coroutines.android)
+
+    //room
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+
+    //paging3
+    implementation (libs.androidx.paging.compose)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

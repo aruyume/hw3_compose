@@ -11,18 +11,19 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.paging.LoadState
+import androidx.paging.compose.collectAsLazyPagingItems
+import com.example.hw3_compose.data.paging.ErrorItem
+import com.example.hw3_compose.data.paging.LoadingItem
 import com.example.hw3_compose.model.EpisodeModel
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -32,27 +33,27 @@ fun EpisodesScreen(
     paddingValues: PaddingValues,
     episodesViewModel: EpisodesViewModel = koinViewModel()
 ) {
-    val episodes = episodesViewModel.episodes.collectAsState().value
-    val isLoading = episodesViewModel.isLoading.collectAsState().value
+    val episodes = episodesViewModel.episodes.collectAsLazyPagingItems()
 
-    LaunchedEffect(Unit) {
-        episodesViewModel.fetchAllEpisodes()
-    }
-
-    if (isLoading) {
-        Text(text = "Loading...", modifier = Modifier.padding(16.dp))
-    } else {
-        LazyColumn(
-            modifier = Modifier
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp),
-            contentPadding = PaddingValues(top = 10.dp)
-        ) {
-            items(episodes) { episodes ->
+    LazyColumn(
+        modifier = Modifier
+            .padding(paddingValues)
+            .padding(horizontal = 16.dp),
+        contentPadding = PaddingValues(top = 10.dp)
+    ) {
+        items(episodes.itemCount) { index ->
+            val episode = episodes[index]
+            episode?.let {
                 EpisodesItem(
-                    episodes = episodes,
-                    onItemClick = { onNavigateToDetail(episodes.id) })
+                    episodes = it,
+                    onItemClick = { onNavigateToDetail(it.id) }
+                )
             }
+        }
+        when (val state = episodes.loadState.append) {
+            is LoadState.Loading -> item { LoadingItem() }
+            is LoadState.Error -> item { ErrorItem(state.error) { episodes.retry() } }
+            else -> {}
         }
     }
 }
