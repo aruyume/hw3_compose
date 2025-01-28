@@ -18,6 +18,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -31,20 +32,28 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.example.hw3_compose.R
-import com.example.hw3_compose.model.CharacterModel
+import com.example.hw3_compose.data.paging.character.CharacterDetailState
 import com.example.hw3_compose.ui.screens.fav.FavoriteCharactersViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun CharacterDetailScreen(
-    character: CharacterModel,
+    characterId: Int,
     paddingValues: PaddingValues,
     onBackClick: () -> Unit,
-    favoritesViewModel: FavoriteCharactersViewModel
+    favoritesViewModel: FavoriteCharactersViewModel,
+    characterDetailViewModel: CharacterDetailViewModel = koinViewModel()
 ) {
+    val state = characterDetailViewModel.state.collectAsState().value
+
     val isFavorite = remember { mutableStateOf(false) }
 
-    LaunchedEffect(character.id) {
-        favoritesViewModel.isFavorite(character.id) { isFav ->
+    LaunchedEffect(characterId) {
+        characterDetailViewModel.getCharacterById(characterId)
+    }
+
+    LaunchedEffect(characterId) {
+        favoritesViewModel.isFavorite(characterId) { isFav ->
             isFavorite.value = isFav
         }
     }
@@ -55,51 +64,69 @@ fun CharacterDetailScreen(
             .background(colorResource(id = R.color.white))
             .padding(paddingValues)
     ) {
-        Image(
-            painter = rememberAsyncImagePainter(character.image),
-            contentDescription = "${character.name}'s image",
-            modifier = Modifier
-                .size(200.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .align(Alignment.CenterHorizontally),
-            contentScale = ContentScale.Crop
-        )
-        Text(
-            text = "Name: ${character.name}",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(12.dp),
-            color = Color.Black
-        )
-        Text(
-            text = "Status: ${character.status}",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(12.dp),
-            color = Color.Black
-        )
-        Text(
-            text = "Gender: ${character.gender}",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(12.dp),
-            color = Color.Black
-        )
-        Text(
-            text = "Location: ${character.location}",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(12.dp),
-            color = Color.Black
-        )
-        Text(
-            text = "Species: ${character.species}",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(12.dp),
-            color = Color.Black
-        )
+        when (state) {
+            is CharacterDetailState.Loading -> {
+                Text("Loading character details...")
+            }
+
+            is CharacterDetailState.Success -> {
+                val character = state.character
+                val painter = rememberAsyncImagePainter(character.image)
+
+                Image(
+                    painter = painter,
+                    contentDescription = "${character.name}'s image",
+                    modifier = Modifier
+                        .size(200.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .align(Alignment.CenterHorizontally),
+                    contentScale = ContentScale.Crop
+                )
+
+                Text(
+                    text = "Name: ${character.name}",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(12.dp),
+                    color = Color.Black
+                )
+                Text(
+                    text = "Status: ${character.status}",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(12.dp),
+                    color = Color.Black
+                )
+                Text(
+                    text = "Gender: ${character.gender}",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(12.dp),
+                    color = Color.Black
+                )
+                Text(
+                    text = "Location: ${character.location}",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(12.dp),
+                    color = Color.Black
+                )
+                Text(
+                    text = "Species: ${character.species}",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(12.dp),
+                    color = Color.Black
+                )
+            }
+
+            is CharacterDetailState.Error -> {
+                Text("Error: ${state.message}")
+            }
+        }
+
         Spacer(modifier = Modifier.weight(1f))
+
         Button(
             onClick = onBackClick,
             modifier = Modifier
@@ -108,34 +135,18 @@ fun CharacterDetailScreen(
         ) {
             Text(text = "Back", fontSize = 16.sp)
         }
+
         IconButton(
             onClick = {
-                if (isFavorite.value) {
-                    favoritesViewModel.removeFavoriteCharacter(
-                        CharacterModel(
-                            id = character.id,
-                            name = character.name,
-                            image = character.image,
-                            status = character.status,
-                            species = character.species,
-                            gender = character.gender,
-                            location = character.location
-                        )
-                    )
-                } else {
-                    favoritesViewModel.addFavoriteCharacter(
-                        CharacterModel(
-                            id = character.id,
-                            name = character.name,
-                            image = character.image,
-                            status = character.status,
-                            species = character.species,
-                            gender = character.gender,
-                            location = character.location
-                        )
-                    )
+                val currentCharacter = (state as? CharacterDetailState.Success)?.character
+                if (currentCharacter != null) {
+                    if (isFavorite.value) {
+                        favoritesViewModel.removeFavoriteCharacter(currentCharacter)
+                    } else {
+                        favoritesViewModel.addFavoriteCharacter(currentCharacter)
+                    }
+                    isFavorite.value = !isFavorite.value
                 }
-                isFavorite.value = !isFavorite.value
             }
         ) {
             Icon(

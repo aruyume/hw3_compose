@@ -1,8 +1,11 @@
 package com.example.hw3_compose.data.dto
 
+import com.example.hw3_compose.data.paging.PagingInfo
 import com.google.gson.annotations.SerializedName
 
 data class EpisodesResultResponse(
+    @SerializedName("info")
+    val pagingInfo: PagingInfo,
     @SerializedName("results")
     val episodesResponse: List<EpisodeResponse>
 )

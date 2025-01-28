@@ -3,13 +3,14 @@ package com.example.hw3_compose.data.db.daos
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.hw3_compose.model.CharacterModel
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface FavoriteCharacterDao {
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addFavoriteCharacter(character: CharacterModel)
 
     @Delete
